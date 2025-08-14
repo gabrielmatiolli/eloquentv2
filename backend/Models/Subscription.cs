@@ -7,18 +7,14 @@ namespace EloquentBackend.Models
   {
     [Key]
     public int Id { get; set; }
-
     [Required]
     [MaxLength(100)]
     public required string Name { get; set; }
-
     public string? Description { get; set; }
-
     [Required]
-    [Column(TypeName = "decimal(18,2)")] // Define o tipo exato no banco de dados
+    [Column(TypeName = "decimal(18,2)")]
     public decimal Price { get; set; }
-
-    // Relação muitos-para-muitos com Perk
+    public int? PerkValue { get; set; }
     public ICollection<Perk> Perks { get; set; } = new List<Perk>();
   }
 }

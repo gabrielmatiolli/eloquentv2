@@ -1,9 +1,8 @@
-using Microsoft.EntityFrameworkCore; // Necessário para os métodos Include e ToListAsync
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using EloquentBackend.Data;
 using EloquentBackend.Models;
 using EloquentBackend.Interfaces.Services;
+using DevOne.Security.Cryptography.BCrypt;
 
 namespace EloquentBackend.Services
 {
@@ -24,18 +23,18 @@ namespace EloquentBackend.Services
             return users;
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            var user = await _db.Users
+            return await _db.Users
                 .Include(u => u.Groups)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
-
-            return user;
         }
 
         public async Task<User> CreateUserAsync(User user)
         {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            user.Password = BCryptHelper.HashPassword(user.Password, BCryptHelper.GenerateSalt());
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
             return user;
@@ -43,6 +42,8 @@ namespace EloquentBackend.Services
 
         public async Task<User> UpdateUserAsync(User user)
         {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            user.Password = BCryptHelper.HashPassword(user.Password, BCryptHelper.GenerateSalt());
             _db.Users.Update(user);
             await _db.SaveChangesAsync();
             return user;
