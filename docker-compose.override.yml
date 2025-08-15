@@ -1,0 +1,29 @@
+services:
+  backend:
+    # Não precisamos de 'ports' ou 'depends_on' aqui, pois eles já estão no arquivo base.
+    # O Docker Compose mescla as configurações.
+    build:
+      context: ./backend
+      # O 'target' aponta para um estágio específico no nosso Dockerfile.
+      # Vamos criar um estágio 'development' para otimizar.
+      target: development
+    volumes:
+      # Mapeia o código-fonte do backend do seu computador para dentro do container.
+      # Formato: [caminho_no_host]:[caminho_no_container]
+      - ./backend:/app
+    # O comando 'dotnet watch' irá reiniciar a API automaticamente a cada mudança no código.
+    command: dotnet watch run --urls "http://+:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    volumes:
+      # Mapeia o código-fonte do frontend.
+      - ./frontend:/app
+      # "Truque" importante: Isso evita que a pasta node_modules do seu computador
+      # sobrescreva a que foi instalada dentro do container, que é compilada
+      # para o ambiente Linux do container.
+      - /app/node_modules
+    # Troca o comando de 'npm start' para 'npm run dev' para ter HMR (Hot Module Replacement).
+    command: npm run dev

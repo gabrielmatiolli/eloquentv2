@@ -2,6 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EloquentBackend.DTOs
 {
+    public record PerkDto
+    {
+        public int Id { get; init; }
+        public required string Name { get; init; }
+        public string? Description { get; init; }
+    }
+
     public record CreatePerkDto
     {
         [Required(ErrorMessage = "O nome do perk é obrigatório.")]

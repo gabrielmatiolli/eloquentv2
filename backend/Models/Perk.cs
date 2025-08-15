@@ -10,6 +10,8 @@ namespace EloquentBackend.Models
         [MaxLength(100)]
         public required string Name { get; set; }
         public string? Description { get; set; }
-        public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+
+        // A coleção agora é da entidade de associação
+        public ICollection<SubscriptionPerk> SubscriptionPerks { get; set; } = new List<SubscriptionPerk>();
     }
 }
