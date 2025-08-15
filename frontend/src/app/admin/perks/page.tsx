@@ -25,6 +25,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ButtonLoading } from "@/components/button-loading";
 import type Perk from "@/models/Perk";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Loader from "@/components/loader";
 
 // Esquema Zod simplificado, pois o ID é gerenciado pelo estado, não pelo formulário.
 const formSchema = z.object({
@@ -32,10 +33,10 @@ const formSchema = z.object({
   description: z.string().min(5, "Description must be at least 5 characters."),
 });
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5091/api";
+const API_URL = "http://localhost:8080/api";
 
 export default function PerksPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [perks, setPerks] = useState<Perk[]>([]);
   const [selectedPerk, setSelectedPerk] = useState<Perk | null>(null);
 
@@ -63,6 +64,7 @@ export default function PerksPage() {
       console.error(error);
       toast.error("Could not load perks.");
     }
+    setIsLoading(false);
   };
 
   const handleClearForm = useCallback(() => {
@@ -76,14 +78,18 @@ export default function PerksPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     const isUpdating = selectedPerk !== null;
-    const url = isUpdating ? `${API_URL}/Perk/${selectedPerk.id}` : `${API_URL}/Perk`;
+    const url = isUpdating
+      ? `${API_URL}/Perk/${selectedPerk.id}`
+      : `${API_URL}/Perk`;
     const method = isUpdating ? "PUT" : "POST";
-    const successMessage = `Perk ${isUpdating ? "updated" : "created"} successfully!`;
+    const successMessage = `Perk ${
+      isUpdating ? "updated" : "created"
+    } successfully!`;
     const errorMessage = `Failed to ${isUpdating ? "update" : "create"} perk.`;
 
-      const payload = isUpdating
-    ? { ...values, id: selectedPerk.id } // Para atualizar, enviamos os dados do form + o ID.
-    : values; // Para criar, enviamos apenas os dados do form.
+    const payload = isUpdating
+      ? { ...values, id: selectedPerk.id } // Para atualizar, enviamos os dados do form + o ID.
+      : values; // Para criar, enviamos apenas os dados do form.
 
     try {
       const response = await fetch(url, {
@@ -106,13 +112,15 @@ export default function PerksPage() {
       setIsLoading(false);
     }
   }
-  
+
   // 1. Nova função para lidar com a exclusão do perk
   const handleDeletePerk = async () => {
     if (!selectedPerk) return;
 
     // 2. Adiciona uma confirmação para evitar exclusões acidentais
-    const isConfirmed = window.confirm(`Are you sure you want to delete the perk "${selectedPerk.name}"?`);
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete the perk "${selectedPerk.name}"?`
+    );
     if (!isConfirmed) return;
 
     setIsLoading(true);
@@ -124,7 +132,7 @@ export default function PerksPage() {
       if (!response.ok) {
         throw new Error("Failed to delete perk");
       }
-      
+
       toast.success("Perk deleted successfully!");
       handleClearForm();
       await fetchPerks();
@@ -136,21 +144,28 @@ export default function PerksPage() {
     }
   };
 
-  const handlePerkClick = useCallback((perk: Perk) => {
-    setSelectedPerk(perk);
-    form.reset({
-      name: perk.name,
-      description: perk.description,
-    });
-  }, [form]);
+  const handlePerkClick = useCallback(
+    (perk: Perk) => {
+      setSelectedPerk(perk);
+      form.reset({
+        name: perk.name,
+        description: perk.description,
+      });
+    },
+    [form]
+  );
 
   return (
     <main className="w-full h-dvh flex items-stretch justify-center gap-8 p-40">
       <Card className="flex-1">
         <CardHeader>
-          <CardTitle>{selectedPerk ? "Edit Perk" : "Create a New Perk"}</CardTitle>
+          <CardTitle>
+            {selectedPerk ? "Edit Perk" : "Create a New Perk ads"}
+          </CardTitle>
           <CardDescription>
-            {selectedPerk ? `Editing "${selectedPerk.name}"` : "Fill out the form to create a new perk."}
+            {selectedPerk
+              ? `Editing "${selectedPerk.name}"`
+              : "Fill out the form to create a new perk."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -163,7 +178,10 @@ export default function PerksPage() {
                   <FormItem>
                     <FormLabel>Perk Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="E.g., Number of Accounts" {...field} />
+                      <Input
+                        placeholder="E.g., Number of Accounts"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -176,7 +194,10 @@ export default function PerksPage() {
                   <FormItem>
                     <FormLabel>Perk Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="E.g., Number of users allowed" {...field} />
+                      <Input
+                        placeholder="E.g., Number of users allowed"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -188,7 +209,7 @@ export default function PerksPage() {
                 ) : (
                   <>
                     <Button type="submit" disabled={isLoading}>
-                      {selectedPerk ? 'Update Perk' : 'Create Perk'}
+                      {selectedPerk ? "Update Perk" : "Create Perk"}
                     </Button>
                     {/* 3. Botão de exclusão renderizado condicionalmente */}
                     {selectedPerk && (
@@ -203,7 +224,11 @@ export default function PerksPage() {
                     )}
                   </>
                 )}
-                <Button type="button" variant="secondary" onClick={handleClearForm}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleClearForm}
+                >
                   Clear
                 </Button>
               </div>
@@ -218,20 +243,26 @@ export default function PerksPage() {
           <CardDescription>Click a perk to edit it.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="w-full h-80">
-            {perks.length === 0 ? (
+          <ScrollArea className="w-full h-96">
+            {perks.length === 0 && isLoading ? (
+              <div className="w-full h-96 grid place-items-center"><Loader /></div>
+            ) : perks.length === 0 ? (
               <p>No perks available.</p>
             ) : (
               <div className="space-y-2">
                 {perks.map((perk) => (
                   <Button
                     key={perk.id}
-                    variant={selectedPerk?.id === perk.id ? "default" : "outline"}
+                    variant={
+                      selectedPerk?.id === perk.id ? "default" : "outline"
+                    }
                     className="w-full h-auto text-left flex flex-col items-start p-4"
                     onClick={() => handlePerkClick(perk)}
                   >
                     <h3 className="font-bold">{perk.name}</h3>
-                    <p className="text-sm text-muted-foreground">{perk.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {perk.description}
+                    </p>
                   </Button>
                 ))}
               </div>
