@@ -26,28 +26,8 @@ import { ButtonLoading } from "@/components/button-loading";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Loader from "@/components/loader";
 import { Checkbox } from "@/components/ui/checkbox";
-
-// Tipos
-interface Perk {
-  id: number;
-  name: string;
-}
-
-interface SubscriptionPerk {
-  perkId: number;
-  subscriptionId: number;
-  numericValue?: number | null;
-  booleanValue?: boolean | null;
-  perk?: Perk;
-}
-
-interface Subscription {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  subscriptionPerks: SubscriptionPerk[];
-}
+import type Perk from "@/models/Perk";
+import type Subscription from "@/models/Subscription";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters.").max(50),
@@ -60,7 +40,7 @@ const formSchema = z.object({
     .array(
       z.object({
         perkId: z.number(),
-        value: z.string().min(1, "Value cannot be empty."),
+        value: z.number().min(0, "Value cannot be empty."),
       })
     )
     .optional(),
@@ -137,12 +117,9 @@ export default function SubscriptionsPage() {
       ...values,
       ...(isUpdating && { id: selectedSubscription.id }),
       subscriptionPerks: (values.subscriptionPerks || []).map((p) => {
-        const isBoolean =
-          p.value.toLowerCase() === "true" || p.value.toLowerCase() === "false";
         return {
           perkId: p.perkId,
-          booleanValue: isBoolean ? p.value.toLowerCase() === "true" : null,
-          numericValue: isBoolean ? null : parseFloat(p.value),
+          value: p.value || 1,
         };
       }),
     };
@@ -207,7 +184,7 @@ export default function SubscriptionsPage() {
         price: subscription.price,
         subscriptionPerks: subscription.subscriptionPerks.map((sp) => ({
           perkId: sp.perkId,
-          value: String(sp.numericValue ?? sp.booleanValue ?? ""),
+          value: sp.value ?? 1,
         })),
       });
     },
@@ -320,17 +297,22 @@ export default function SubscriptionsPage() {
                                 <FormLabel className="flex-1 font-normal">
                                   {perk.name}
                                 </FormLabel>
+                                <FormMessage />
                                 {selectedPerk && (
                                   <Input
                                     placeholder="Value"
+                                    type="number"
                                     className="h-8 w-40"
-                                    value={selectedPerk.value}
+                                    value={Number(selectedPerk.value) || 1}
                                     onChange={(e) => {
                                       const updatedPerks = (
                                         field.value || []
                                       ).map((p) =>
                                         p.perkId === perk.id
-                                          ? { ...p, value: e.target.value }
+                                          ? {
+                                              ...p,
+                                              value: Number(e.target.value),
+                                            }
                                           : p
                                       );
                                       field.onChange(updatedPerks);

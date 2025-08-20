@@ -4,18 +4,58 @@ import mockup from "@/assets/mockup.webp";
 import ScrollDown from "@/components/scroll-down";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { dados } from "@/assets/data";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Suspense, use } from "react";
+import { getAllSubscriptions } from "@/services/subscriptions-services";
+import Loader from "@/components/loader";
+import type Perk from "@/models/Perk";
+import { getAllPerks } from "@/services/perks-services";
+
+const CheckMarkIcon = () => (
+  <svg
+    stroke="currentColor"
+    fill="currentColor"
+    strokeWidth="0"
+    viewBox="0 0 448 512"
+    className="text-md text-green-300"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"></path>
+  </svg>
+);
+
+const CrossMarkIcon = () => (
+  <svg
+    stroke="currentColor"
+    fill="currentColor"
+    strokeWidth="0"
+    viewBox="0 0 352 512"
+    className="text-md text-red-300"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path>
+  </svg>
+);
+
+const formatPerkText = (perk: Perk, value: number | null): string => {
+  const name = perk.name.toLowerCase();
+
+  if (name.includes("account")) {
+    return `${value} ${value === 1 ? "account" : "accounts"}`;
+  }
+  if (name.includes("history") || name.includes("forecast")) {
+    return `${value} days ${name}`;
+  }
+  return perk.name; // Para "Customizable", "Mobile App", etc.
+};
 
 export default function Home() {
+  const subscriptions = use(getAllSubscriptions());
+  const perks = use(getAllPerks());
+
   return (
     <main className="w-full bg-background">
       <Header />
@@ -51,41 +91,59 @@ export default function Home() {
         </div>
         <ScrollDown />
       </div>
-      <div className="flex flex-col items-center justify-between py-28 h-dvh relative w-full px-20">
-        <h3 className="text-3xl font-bold">
+      <div className="xl:h-dvh min-h-dvh w-full xl:px-20 px-10 py-20 flex items-center justify-center gap-12 snap-end relative flex-col">
+        <h1 className="font-bold text-4xl">
           Select the best offer for your use.
-        </h3>
-        <div className="grid grid-cols-4 gap-8 w-full">
-          {dados.map((plano) => (
-            <Card key={plano.id} className="hover:scale-105 transition-all relative overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-center text-2xl font-bold">
-                  {plano.nome}
-                </CardTitle>
-                <CardDescription className="text-center font-bold text-2xl text-foreground flex items-start justify-center gap-2">
-                  {`R$ ${plano.price},00`}
-                  <span className="text-sm font-light">/month</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <div className="h-4 w-full bg-foreground absolute top-0 -left-20 -rotate-45"></div>
-                <ul>
-                  {Object.entries(plano.beneficios).map(([key, value]) => (
-                    <li key={key}>
-                      {key}: {value.toString()}
-                    </li>
-                  ))}
+        </h1>
+
+        {/* Grid para os cartões */}
+        <div className="h-full w-full flex items-center justify-center xl:flex-row flex-col gap-12">
+          <Suspense fallback={<Loader />}>
+            {subscriptions.map((subscription) => (
+              <div
+                key={subscription.id}
+                className="w-1/4 h-full flex flex-col items-center justify-start py-6 px-2 rounded-lg border relative overflow-clip box-border gap-4 hover:scale-105 transition-all cursor-pointer"
+              >
+                {/* Faixa decorativa (condicional para o plano 'Shared') */}
+                {subscription.name === "Shared" && (
+                  <div className="h-6 w-full -rotate-45 absolute -left-20 top-0 bg-foreground"></div>
+                )}
+
+                {/* Nome do Plano */}
+                <h1 className="font-bold text-3xl">{subscription.name}</h1>
+
+                {/* Preço */}
+                <span className="flex items-start gap-1">
+                  <h1 className="font-bold text-3xl">R${subscription.price}</h1>
+                  <p>/month</p>
+                </span>
+
+                {/* Lista de Benefícios */}
+                <ul className="dark:font-thin font-normal space-y-2 pb-12 pt-4">
+                  {perks.map((perk) => {
+                    // Verifica se o plano ATUAL possui este perk da lista mestra
+                    const currentPerk = subscription.subscriptionPerks.find(
+                      (sp) => sp.perkId === perk.id
+                    );
+
+                    return (
+                      <li key={perk.id} className="flex items-center gap-2">
+                        {currentPerk ? <CheckMarkIcon /> : <CrossMarkIcon />}
+
+                        {currentPerk
+                          ? formatPerkText(perk, currentPerk.value!)
+                          : perk.name}
+                      </li>
+                    );
+                  })}
                 </ul>
-              </CardContent>
-              <CardFooter className="w-full text-center">
-                <CardAction className="mx-auto">
-                  <Button variant={"secondary"} className="mx-auto">Start now</Button>
-                </CardAction>
-              </CardFooter>
-            </Card>
-          ))}
+
+                {/* Botão de Ação */}
+                <Button variant={"outline"}>Start now</Button>
+              </div>
+            ))}
+          </Suspense>
         </div>
-        <ScrollDown />
       </div>
     </main>
   );
