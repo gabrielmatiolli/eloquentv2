@@ -30,6 +30,7 @@ import type Perk from "@/models/Perk";
 import type Subscription from "@/models/Subscription";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import type SubscriptionPerk from "@/models/SubscriptionPerk";
 
 // Schema de validação focado apenas nos perks
 const perksFormSchema = z.object({
@@ -39,11 +40,11 @@ const perksFormSchema = z.object({
         perkId: z.number(),
         subscriptionId: z.number(),
         value: z.preprocess(
-          (val) => (String(val).trim() === "" ? null : Number(val)),
+          (val) => (String(val).trim() === "" ? undefined : Number(val)),
           z
             .number({ message: "Value is required." })
             .min(1, { message: "Value must be at least 1." })
-        ) as z.ZodType<number, any, any>,
+        ) as z.ZodType<number, number>,
       })
     )
     .optional(),
@@ -64,7 +65,8 @@ export default function UpdateSubscriptionPerksPage({
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [allPerks, setAllPerks] = useState<Perk[]>([]);
 
-  const form = useForm<z.infer<typeof perksFormSchema>>({
+  type PerksFormType = z.infer<typeof perksFormSchema>;
+  const form = useForm<PerksFormType>({
     resolver: zodResolver(perksFormSchema),
     defaultValues: {
       subscriptionPerks: [],
@@ -91,7 +93,7 @@ export default function UpdateSubscriptionPerksPage({
         }
 
         const subData: Subscription = await subResponse.json();
-        const subPerksData: any[] = await subPerksResponse.json(); // Dados da sua nova rota
+        const subPerksData: SubscriptionPerk[] = await subPerksResponse.json(); // Dados da sua nova rota
         const allPerksData: Perk[] = await allPerksResponse.json();
 
         setSubscription(subData);
@@ -206,7 +208,12 @@ export default function UpdateSubscriptionPerksPage({
                                       if (checked) {
                                         field.onChange([
                                           ...currentPerks,
-                                          { perkId: perk.id, value: 1, subscriptionId: Number(subscriptionId) },
+                                          {
+                                            perkId: perk.id,
+                                            value: 1,
+                                            subscriptionId:
+                                              Number(subscriptionId),
+                                          },
                                         ]);
                                       } else {
                                         field.onChange(
