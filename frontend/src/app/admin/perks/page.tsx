@@ -33,7 +33,7 @@ const formSchema = z.object({
   description: z.string().min(5, "Description must be at least 5 characters."),
 });
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PerksPage() {
   const [isLoading, setIsLoading] = useState(true);

@@ -18,7 +18,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=development /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_PUBLIC_API_URL=http://localhost:8080
+ENV NEXT_PUBLIC_API_URL=https://eloquentv2.onrender.com/api
 RUN npm run build
 
 # Estágio 'runner'

@@ -32,6 +32,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type SubscriptionPerk from "@/models/SubscriptionPerk";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 // Schema de validação focado apenas nos perks
 const perksFormSchema = z.object({
   subscriptionPerks: z
@@ -49,8 +51,6 @@ const perksFormSchema = z.object({
     )
     .optional(),
 });
-
-const API_URL = "http://localhost:8080/api";
 
 // A página recebe 'params' com o ID da URL, ex: /subscriptions/1/perks
 export default function UpdateSubscriptionPerksPage({
