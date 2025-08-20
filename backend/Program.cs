@@ -10,6 +10,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPerkService, PerkService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<ISubscriptionPerkService, SubscriptionPerkService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

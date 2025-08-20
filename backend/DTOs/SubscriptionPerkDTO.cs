@@ -6,16 +6,18 @@ namespace EloquentBackend.DTOs
     {
         [Required(ErrorMessage = "O ID do perk é obrigatório.")]
         public required int perkId { get; init; }
-        public bool? booleanValue { get; init; }
-        public int? numericValue { get; init; }
+
+        [Required(ErrorMessage = "O ID do subscription é obrigatório.")]
+        public required int subscriptionId { get; init; }
+        public int? value { get; init; }
     }
 
     public record SubscriptionPerkDto
     {
         public int Id { get; init; }
         public int PerkId { get; init; }
-        public bool? BooleanValue { get; init; }
-        public int? NumericValue { get; init; }
-        public required PerkDto Perk { get; init; } // <-- Mudança: agora é um único objeto
+        public int SubscriptionId { get; init; }
+        public int? Value { get; init; }
+        public required PerkDto Perk { get; init; }
     }
 }

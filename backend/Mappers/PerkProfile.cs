@@ -11,7 +11,7 @@ public class PerkProfile : Profile
         CreateMap<CreateSubscriptionPerkDto, SubscriptionPerk>();
 
         // Mapeamentos para resposta (Entidade -> DTO)
-        CreateMap<Perk, PerkDto>(); 
+        CreateMap<Perk, PerkDto>();
         CreateMap<SubscriptionPerk, SubscriptionPerkDto>(); // Esta linha vai funcionar agora
     }
 }
