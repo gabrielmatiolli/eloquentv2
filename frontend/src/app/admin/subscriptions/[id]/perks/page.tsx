@@ -173,7 +173,7 @@ export default function UpdateSubscriptionPerksPage({
               <ArrowLeft size={16} />
               Back to Subscriptions
             </Link>
-            <CardTitle>Edit Perks for "{subscription.name}" </CardTitle>
+            <CardTitle>Edit Perks for &quot;{subscription.name}&quot; </CardTitle>
             <CardDescription>
               Select the perks and define their values for this subscription
               plan.
